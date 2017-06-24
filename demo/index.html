@@ -117,11 +117,12 @@
     data: {
       day: 30,
       mes: 30,
+      //list中多个对象时,每个对象中每小格子可对应数值不同；前一个对象line为后一对象move
       listDay: [
         {
-          'move': 0,
-          'line': 375,
-          'interval': 1,
+          'move': 0, //开始数值
+          'line': 375, //结束数值
+          'interval': 1, //每格子对应数值
           'transformMove': 0,
           'transformLine': 0
         }

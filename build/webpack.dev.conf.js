@@ -9,7 +9,6 @@ config.output.publicPath = '/';
 
 config.plugins = [
   new webpack.HotModuleReplacementPlugin(),
-  new webpack.NoEmitOnErrorsPlugin(),
   new HtmlWebpackPlugin({
     filename: './../dists/index.html',
     template: path.resolve(__dirname, './../demo/index.html'),

@@ -1,6 +1,6 @@
 <template>
   <div class="caliper">
-    <canvas id="canv" @touchstart.stop.prevent="canvasStart" @touchmove.stop.prevent="canvasMove" @touchend.stop.prevent="canvasEnd" @transitionend.stop.prevent="transitionEnd" ref="canv" :width="widths" height="70" :style="{transitionDuration: transitions + 'ms', transform: 'translate3d(' + translateX + 'px, 0px, 0px)'}"></canvas>
+    <canvas id="canv" @touchstart.stop.prevent="canvasStart" @touchmove.stop.prevent="canvasMove" @touchend.stop.prevent="canvasEnd" @transitionend.stop.prevent="transitionEnd" ref="canv" :width="widths" height="70" :style="{transitionDuration: transitions + 'ms', transform: 'translate3d(' + translateLeft + 'px, 0px, 0px)'}"></canvas>
   </div>
 </template>
 <script>
@@ -29,57 +29,51 @@
     },
     data () {
       return {
-        amount: this.value,
+        defaultValue: this.value,
         width: 0,
-        sum: 0,
-        num: 0,
-        minNum: 0,
-        transformLeft: '',
-        //用于惯性缓动的变量
-        startX: 0,
-        // 上一次位置
-        lastX: 0,
-        lastMoveTime: 0,
-        lastMoveStart: 0,
-        stopInertiaMove: false,
-        moveBool: false,
-        nowMove: 0,
-        lastTime: 0,
-        //用来判断是否惯性滑动
-        ai: 0,
-        bi: null,
-        moveFun: null,
-        direction: '',
-        cc: null,
+        movingDistance: 0, //当次移动位置距离
+        minNum: 0, //最小值对应位置
+        //用来判断是否惯性滑动变量
+        moveBool: false, //判断是否在惯性滑动中
+        nowMove: 0, //最近一次触摸屏幕时间
+        lastTime: 0, //上一次触摸屏幕时间
+        startX: 0, //首次触摸位置 用于惯性缓动的变量
+        lastX: 0, //上一次move的位置
+        initialMoveTime: 0, //初始时间
+        initialMoveStart: 0, //初始位置
+        triggerInertia: 0, //是否触发惯性
+        direction: '', //移动方向
         index: 0,
-        translateX: 0,
-        transitions: 0
+        translateLeft: 0, //左侧偏移位置
+        transitions: 0,
+        triggerInertiaObj: null,
+        initializeLocationObj: null,
+        inertiaObject: null, //惯性对象
+        eventObj: null //冒泡到父组件对象
       }
     },
     mounted () {
       //画刻度尺
       var canvas = this.$refs.canv
-      var self = this
-      this.transformLeft = this.translateX
       if (canvas.getContext) {
         var ctx = canvas.getContext('2d')
         //开始一个新的绘制路径
         ctx.beginPath()
         this.width = window.innerWidth / 2 - canvas.offsetLeft
         //smallNum小格数量用于for循环，intervalNum为出现长刻度间隙, defaultNum为默认起始刻度（通过传入数值计算位置展示），minNum为最小展示的数字位置
-        var smallNum = 0, intervalNum = this.intervalNum, defaultNum = this.amount
-//        this.minNum = this.setMinNum / this.intervalNum
+        var smallNum = 0, intervalNum = this.intervalNum, defaultNum = 0
         this.list.forEach((item, index) => {
           //计算当前对象小格画多少个
           smallNum = (item['line'] - item['move']) / item['interval']
-          let h = 0
-          for (; h <= smallNum; h++) {
-            //代表的数值等于最小数值时存储
-            if (!this.minNum && item['interval'] * h == this.setMinNum) {
+          let activeNum = 0
+          for (let h = 0; h <= smallNum; h++) {
+            //对应数值等于最小数值时存储 最小值对应位置
+            activeNum = item['interval'] * h
+            if (!this.minNum && activeNum == this.setMinNum) {
               this.minNum = (h * 10)
             }
             //计算默认展示参数的位置
-            if ((h * item['interval'] + item['move']) == this.amount) {
+            if (!defaultNum && (activeNum + item['move']) == this.defaultValue) {
               defaultNum = (h * 10) + this.width - window.innerWidth / 2 - canvas.offsetLeft
             }
             //长 短线判断
@@ -90,12 +84,10 @@
               ctx.lineTo((h * 10) + this.width, 50)
               //绘制一条带颜色的直线
               ctx.strokeStyle = '#ccc'
-              //加文字
               ctx.fillStyle = '#ccc'
-              //文字大小
               ctx.font = '12pt Arial'
               ctx.textAlign = 'center'
-              ctx.fillText(h * item['interval'] + item['move'], (h * 10) + this.width, 40)
+              ctx.fillText(activeNum + item['move'], (h * 10) + this.width, 40)
             } else {
               //定义直线的起点坐标
               ctx.moveTo((h * 10) + this.width, 70)
@@ -116,31 +108,29 @@
             }
           }
         })
-//        console.log(this.list)
         this.width -= window.innerWidth / 2 - canvas.offsetLeft
         ctx.stroke()
-  //    关闭当前的绘制路径
+        //关闭当前的绘制路径
         ctx.closePath()
         //尺度绘画结束
       }
       //第一次计算数值
       this.havaNum()
       //此处设置defaultNum
-      this.translateX = -defaultNum
+      this.translateLeft = -defaultNum
     },
     methods: {
       canvasStart (e) {
-        //moveBool判断是否在惯性滑动中
+        //moveBool判断是否在惯性滑动中 惯性中点击 立马停止惯性
         if (this.moveBool) {
           this.nowMove = Date.now()
           //防止惯性滑动时过快双击，闪屏问题，比较两次点击时间
           if (this.nowMove - this.lastTime < 200) {
-//            console.log('太快了，歇歇吧。')
             this.lastTime = this.nowMove
             return false
           }
           this.lastTime = this.nowMove
-          clearInterval(this.cc)
+          clearInterval(this.inertiaObject)
           this.lastPosition()
           this.moveBool = false
         }
@@ -149,87 +139,86 @@
         //获取手指落下的x坐标
         this.startX = Number(touch.pageX)
         //计算数值
-        this.havaNum()
+//        this.havaNum() 17/06/23
         /**
          * 惯性缓动代码
          */
         this.lastX = this.startX
-        this.lastMoveStart = this.lastX
-        this.lastMoveTime = Date.now()
-        this.stopInertiaMove = true
+        //??
+        this.initialMoveStart = this.lastX
+        this.initialMoveTime = Date.now()
+        this.moveBool = false
       },
       canvasMove (e) {
         //获取移动手指的x坐标
         var touch = e.touches[0]
         var nowX = Number(touch.pageX)
-        if (nowX < this.lastX) {
-          this.num = nowX - this.lastX
-          //设置一个canvas的transform值的速度
-//          this.sum = Math.floor(this.num / 70) * 10
-          this.sum = this.num
+        if (nowX <= Number(this.lastX)) {
           this.direction = 'left'
+          this.movingDistance = nowX - this.lastX
         } else {
-          this.num = -(this.lastX - nowX)
-          //设置一个canvas的transform值的速度
-          this.sum = this.num
           this.direction = 'right'
+          this.movingDistance = -(this.lastX - nowX)
         }
         this.lastX = nowX
-        //重新获取左边距。让下次的移动在原始的基础上变动
+        //移动过程中不计算 数值
         this.havaNum()
-        this.translateX = this.translateX + this.sum
+        //重新获取左边距。让下次的移动在原始的基础上变动
+        this.translateLeft = this.translateLeft + this.movingDistance
         /**
          * 缓动代码
-         * ai变量是为了判断move与end之间的时间，过快时候 触发缓动
+         * triggerInertia变量是为了判断move与end之间的时间，过快时候 触发缓动
          */
-        this.ai = 1
-        window.clearTimeout(this.bi)
-        this.bi = setTimeout(() => {
-          this.ai = 0
+        this.triggerInertia = 1
+        window.clearTimeout(this.triggerInertiaObj)
+        //一直move的时候定时回调不会走，可通过回调内triggerInertia的值，判断手指离开是不是与上次move的时间差小于50，小于出发惯性
+        this.triggerInertiaObj = setTimeout(() => {
+          this.triggerInertia = 0
         }, 50)
         var nowTime = Date.now()
         //一个定时回调,300ms执行,先清除初始位置的覆盖，两次move触发时间大于300，则重新给初始位置赋值 为了处理move过程中的停顿
-        window.clearTimeout(this.moveFun)
-        this.moveFun = setTimeout(() => {
-          this.lastMoveTime = nowTime
-          this.lastMoveStart = nowX
+        window.clearTimeout(this.initializeLocationObj)
+        this.initializeLocationObj = setTimeout(() => {
+          //给上次移动时间 位置，重新赋值
+          this.initialMoveTime = nowTime
+          this.initialMoveStart = nowX
         }, 300)
       },
       canvasEnd (e) {
-        //在重新获取左边距，判断得到最后的显示左边距
-        var newS = this.translateX
+        //清除初始位置重置回调，不清除也不影响啊 貌似
+        window.clearTimeout(this.initializeLocationObj)
         /**
          * 判断当前所处在可选择范围内,才调用惯性滑动,否则直接重置
          */
-        if (this.currentLocation(newS)) {
-          //判断ai变量的数值 当滑动距离小于三像素时候，惯性不生效
-          if (!this.ai && this.lastX !== this.startX) {
-            //落下手指位置 与 最后一次Move位置不一致
+        if (this.currentLocation(this.translateLeft)) {
+          //判断triggerInertia变量的数值=0不触发惯性;防止初始位置和最后位置一致，防止点击
+          if (!this.triggerInertia && this.lastX !== this.startX) {
             //为了防止点击鼠标离开时候多移动的十像素 此处是无惯性鼠标离开处理
-            this.lastPosition(newS)
-          } else if (this.ai && (parseInt(this.lastX - this.lastMoveStart) > 3 || parseInt(this.lastX - this.lastMoveStart) < -3)) {
-//            console.log('此时要惯性滑动')
+            this.lastPosition()
+            //最后一次移动位置与初始位置小于三像素时候，惯性不生效
+          } else if (this.triggerInertia && (parseInt(this.lastX - this.initialMoveStart) > 3 || parseInt(this.lastX - this.initialMoveStart) < -3)) {
+            //此时要惯性滑动
             var nowTime = Date.now()
             /**
              * 动画所需要变量
              */
             //最后一段时间手指划动速度  初速度
-            var v = (this.lastX - this.lastMoveStart) / (nowTime - this.lastMoveTime)
+            var v = (this.lastX - this.initialMoveStart) / (nowTime - this.initialMoveTime)
             //加速度方向 向左滑动v小于0,取1.向右滑动v大于0,取-1
             var dir = v > 0 ? 1 : -1
             v = v > 0 ? v : -v
-//            console.log(v)
             //惯性时间
             var inert = 1000
             var AverageNumber = 10
             var jia = v / (inert / AverageNumber)
-            var self = this
             //动画开始
-            self.moveBool = true
-            this.stopInertiaMove = false
+            this.moveBool = true
             //动画
             this.animateSlide(v, AverageNumber, jia, dir)
           }
+        } else {
+          //停止时计算下数值
+          this.havaNum()
         }
       },
       //过渡结束，重置
@@ -240,103 +229,100 @@
       currentLocation (num) {
         var s = true
         if (num >= -this.minNum) {
-          this.translateX = -this.minNum
+          this.translateLeft = -this.minNum
           this.transitions = 300
           s = false
         } else if (num <= -this.width) {
-          this.translateX = -this.width
+          this.translateLeft = -this.width
           this.transitions = 300
           s = false
         }
-        this.havaNum()
         return s
       },
       //计算当前数值，根据左边距判断当前所在区间，每小格代表的数值,本来是要定时器处理，但后来页面运行速度卡顿，修改为当move时候调用获取
       havaNum () {
-        var self = this
+        if (this.moveBool) return false
         var canvas = this.$refs.canv
-        var newS2 = parseInt(this.translateX)
+        var newS2 = parseInt(this.translateLeft)
         if ((newS2 % 10) != 0) {
           return false
         }
-        if (!(self.list[this.index]['transformMove'] < -newS2 && -newS2 <= self.list[this.index]['transformLine'])) {
-          if (self.list[this.index]['transformLine'] <= -newS2) {
+        if (!(this.list[this.index]['transformMove'] < -newS2 && -newS2 <= this.list[this.index]['transformLine'])) {
+          if (this.list[this.index]['transformLine'] <= -newS2) {
             this.index += 1
           } else {
             this.index -= 1
           }
         }
         //最左最右可滑动
-        if (this.index > self.list.length - 1) {
-          this.index = self.list.length - 1
+        if (this.index > this.list.length - 1) {
+          this.index = this.list.length - 1
           return false
         } else if (this.index < 0) {
           this.index = 0
           return false
         }
-        if (newS2 > -self.minNum || newS2 < -self.width) {
+        if (newS2 > -this.minNum || newS2 < -this.width) {
           return false
         }
-        var r = (-(newS2 + self.list[this.index]['transformMove']) * self.list[this.index]['interval'] / 10) + self.list[this.index]['move']
-        this.amount = r
+        var r = (-(newS2 + this.list[this.index]['transformMove']) * this.list[this.index]['interval'] / 10) + this.list[this.index]['move']
+        this.defaultValue = r
       },
       //最后停下位置取整
-      lastPosition (newS = this.translateX) {
+      lastPosition (newS = this.translateLeft) {
         var moveL = 0
         //判断超过正格多少像素 不大于5像素 则还原
-//        console.log((-newS) % 10)
         if ((-newS) % 10 >= 5) {
           if (this.direction == 'left') {
 //            console.log('左滑动')
             moveL = newS - (newS % 10) - 10
           } else {
 //            console.log('右滑动')
-            moveL = newS - (newS % 10) + 10
+            moveL = newS - (newS % 10)
           }
         } else {
           moveL = newS - (newS % 10)
         }
-        //判断是否在不可选范围
-//        if (this.currentLocation(moveL)) {
-//          this.transitions = '30ms'
-//        }
-//        this.transitions = 10
-        this.translateX = moveL
+        this.transitions = 100
+        this.translateLeft = moveL
         this.havaNum()
       },
       animateSlide (V, T, a, dir) {
-        var self = this
         function inertiaMove () {
-          if (self.stopInertiaMove) return
+          if (!this.moveBool) return
           V -= a
           var S = (V * T) - 1 / 2 * a * Math.pow(T, 2)
-//          console.log(S)
+          var nums = this.translateLeft
           if (V < 0 || S < 0) {
-            clearInterval(self.cc)
+            clearInterval(this.inertiaObject)
             //取整
-            self.lastPosition()
+            this.lastPosition()
+            this.moveBool = false
             //计算数值
-            self.havaNum()
-            self.moveBool = false
+            this.havaNum()
             return false
           }
-          var nums = self.translateX
-          if (self.currentLocation(nums + S * dir)) {
-            self.translateX = nums + S * dir
+          if (this.currentLocation(nums + S * dir)) {
+            this.translateLeft = nums + S * dir
           } else {
-            clearInterval(self.cc)
-            self.lastPosition()
-            self.havaNum()
-            self.moveBool = false
+            clearInterval(this.inertiaObject)
+            this.lastPosition()
+            this.moveBool = false
+            this.havaNum()
           }
         }
-        self.cc && clearInterval(self.cc)
-        self.cc = setInterval(inertiaMove, T)
+        this.inertiaObject && clearInterval(this.inertiaObject)
+        this.inertiaObject = setInterval(() => {
+          inertiaMove.call(this, null)
+        }, T)
       }
     },
     watch: {
-      amount (val) {
-        this.$emit('change', val)
+      defaultValue (val) {
+        this.eventObj = null
+        this.eventObj = setTimeout(() => {
+          this.$emit('change', val)
+        }, 500)
       }
     }
   }
