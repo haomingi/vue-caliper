@@ -49,7 +49,6 @@
         triggerInertiaObj: null,
         initializeLocationObj: null,
         inertiaObject: null, //惯性对象
-        eventObj: null, //冒泡到父组件对象
         calculateValueObj: null
       }
     },
@@ -241,6 +240,9 @@
         //移动过程不需要时时计算
         if (this.calculateValueObj) window.clearTimeout(this.calculateValueObj)
         this.calculateValueObj = setTimeout(() => {
+          calculateFun.call(this, null)
+        }, 500)
+        function calculateFun () {
           var newS2 = parseInt(this.translateLeft)
           if ((newS2 % 10) != 0) {
             return false
@@ -251,18 +253,23 @@
             } else {
               this.index -= 1
             }
+            //数据为不同区块时，一次划过两个区块，会造成数值计算异常。
+            //进入当前判断，index+1.直到不进入当前判断，此时index的数值才是准确的。
+            calculateFun.call(this, null)
+          } else {
+            //在当前区间内
+            //最左最右可滑动
+            if (this.index > this.list.length - 1) {
+              this.index = this.list.length - 1
+              return false
+            } else if (this.index < 0) {
+              this.index = 0
+              return false
+            }
+            var r = (-(newS2 + this.list[this.index]['transformMove']) * this.list[this.index]['interval'] / 10) + this.list[this.index]['move']
+            this.defaultValue = r
           }
-          //最左最右可滑动
-          if (this.index > this.list.length - 1) {
-            this.index = this.list.length - 1
-            return false
-          } else if (this.index < 0) {
-            this.index = 0
-            return false
-          }
-          var r = (-(newS2 + this.list[this.index]['transformMove']) * this.list[this.index]['interval'] / 10) + this.list[this.index]['move']
-          this.defaultValue = r
-        }, 500)
+        }
       },
       //最后停下位置取整
       lastPosition (newS = this.translateLeft) {
@@ -312,10 +319,7 @@
     },
     watch: {
       defaultValue (val) {
-        this.eventObj = null
-        this.eventObj = setTimeout(() => {
-          this.$emit('change', val)
-        }, 500)
+        this.$emit('change', val)
       }
     }
   }
