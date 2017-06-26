@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DEMO vue-caliper</title>
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+    }
+    .record {
+      width: 200px;
+      height: 30px;
+      margin: 0px auto;
+      text-align: center;
+      line-height: 30px;
+      color: #10a0eb;
+    }
+    .ang {
+      width: 0px;
+      height: 0px;
+      border-top: 9px solid #10a0eb;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      display: block;
+      position: fixed;
+      left: 50%;
+      top: 10px;
+      margin-left: -6px;
+      position: absolute;
+    }
+    .line {
+      height: 60px;
+      width: 2px;
+      background: #10a0eb;
+      display: block;
+      position: fixed;
+      left: 50%;
+      margin-left: -1px;
+      top: 12px;
+      position: absolute;
+      z-index: 999;
+    }
+    .all {
+      width: 100%;
+      height: 80px;
+      overflow-x: hidden;
+      margin: 10px auto;
+      position: relative;
+    }
+    #canv {
+      display: block;
+      min-width: 1000px;
+      transition-property: -webkit-transform;
+      transform-origin: 0px 0px 0px;
+    }
+    .red{
+      display: block;margin-top: -8px;font-size: 22px;color:#10a0eb;
+    }
+    .dotted,.dotted1{
+      position: absolute;
+      height: 0;
+    }
+    .dotted{
+      margin-left: -60px;
+      top:9px;
+      border-bottom:1px dotted #ccc;
+      width:120px;
+      left:50%;
+    }
+    .dotted1{
+      left:0;
+      border-bottom:2px solid #ccc;
+      bottom:8px;
+      width:100%;
+    }
+    .orangeday .red,.orangeday .record{
+      color:#ff7d15;
+    }
+    .orangeday .line{
+      background: #ff7d15;
+    }
+    .orangeday .ang{
+      border-top: 9px solid #ff7d15;
+    }
+  </style>
+</head>
+<body>
+<div id="example">
+  <div class="scale1" :class="[colorClasses]">
+    <div class="record"><span>{{texts}}</span><span class="red" id="red">{{mes}}</span></div>
+    <div class="all">
+      <b class="ang"></b>
+      <i class="line"></i>
+      <div class="dotted"></div>
+      <caliper
+              v-model="day"
+              :list="listDay"
+              :set-min-num="setMinDay"
+              :interval-num="15"
+              :widths="4200"
+              @change="onChange"
+      ></caliper>
+      <div class="dotted1"></div>
+    </div>
+  </div>
+  <div class="scale1">
+    <div class="record"><span>{{text}}</span><span class="red">{{amounts}}</span></div>
+    <div class="all">
+      <b class="ang"></b>
+      <i class="line"></i>
+      <div class="dotted"></div>
+        <caliper
+                v-model="amount"
+                :list="list"
+                :set-min-num="setMinNum"
+                :text="text"
+                @change="onChanges"
+        >
+        </caliper>
+      <div class="dotted1"></div>
+    </div>
+  </div>
+</div>
+<script src="//cdn.bootcss.com/vue/2.3.3/vue.js"></script>
+<script type="text/javascript" src="./main.js"></script></body>
+<script>
+  const arry = [
+    {
+      'move': 0,
+      'line': 10000,
+      'interval': 100,
+      'transformMove': 0,
+      'transformLine': 0
+    }, {
+      'move': 10000,
+      'line': 100000,
+      'interval': 1000,
+      'transformMove': 0,
+      'transformLine': 0
+    }, {
+      'move': 100000,
+      'line': 1000000,
+      'interval': 10000,
+      'transformMove': 0,
+      'transformLine': 0
+    }, {
+      'move': 1000000,
+      'line': 2000000,
+      'interval': 100000,
+      'transformMove': 0,
+      'transformLine': 0
+    }
+  ]
+  new Vue({
+    el: '#example',
+    components: {
+      caliper: VueCaliper
+    },
+    data: {
+      amount: 15000,
+      amounts: 15000,
+      list: arry,
+      setMinNum: 1000,
+      text: '单笔投资金额(元)',
+      day: 30,
+      mes: 30,
+      //list中多个对象时,每个对象中每小格子可对应数值不同；前一个对象line为后一对象move
+      listDay: [
+        {
+          'move': 0, //开始数值
+          'line': 375, //结束数值
+          'interval': 1, //每格子对应数值
+          'transformMove': 0,
+          'transformLine': 0
+        }
+      ],
+      setMinDay: 1,
+      texts: '项目期限(天)',
+      colorClasses: 'orangeday'
+    },
+    methods: {
+      onChange (val) {
+        this.mes = val
+      },
+      onChanges (val) {
+        this.amounts = val
+      }
+    }
+  });
+</script>
+</html>
