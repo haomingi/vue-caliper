@@ -6,7 +6,7 @@ caliper component. Easy to use.
 npm run dev
 ```
 ## Examples
-http://localhost:9999
+[http://localhost:9999](https://haomingi.github.io/vue-caliper/dists/index.html)
 
 ## Usage
 
