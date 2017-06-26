@@ -49,7 +49,8 @@
         triggerInertiaObj: null,
         initializeLocationObj: null,
         inertiaObject: null, //惯性对象
-        eventObj: null //冒泡到父组件对象
+        eventObj: null, //冒泡到父组件对象
+        calculateValueObj: null
       }
     },
     mounted () {
@@ -138,8 +139,6 @@
         var touch = e.touches[0]
         //获取手指落下的x坐标
         this.startX = Number(touch.pageX)
-        //计算数值
-//        this.havaNum() 17/06/23
         /**
          * 惯性缓动代码
          */
@@ -216,9 +215,6 @@
             //动画
             this.animateSlide(v, AverageNumber, jia, dir)
           }
-        } else {
-          //停止时计算下数值
-          this.havaNum()
         }
       },
       //过渡结束，重置
@@ -242,31 +238,31 @@
       //计算当前数值，根据左边距判断当前所在区间，每小格代表的数值,本来是要定时器处理，但后来页面运行速度卡顿，修改为当move时候调用获取
       havaNum () {
         if (this.moveBool) return false
-        var canvas = this.$refs.canv
-        var newS2 = parseInt(this.translateLeft)
-        if ((newS2 % 10) != 0) {
-          return false
-        }
-        if (!(this.list[this.index]['transformMove'] < -newS2 && -newS2 <= this.list[this.index]['transformLine'])) {
-          if (this.list[this.index]['transformLine'] <= -newS2) {
-            this.index += 1
-          } else {
-            this.index -= 1
+        //移动过程不需要时时计算
+        if (this.calculateValueObj) window.clearTimeout(this.calculateValueObj)
+        this.calculateValueObj = setTimeout(() => {
+          var newS2 = parseInt(this.translateLeft)
+          if ((newS2 % 10) != 0) {
+            return false
           }
-        }
-        //最左最右可滑动
-        if (this.index > this.list.length - 1) {
-          this.index = this.list.length - 1
-          return false
-        } else if (this.index < 0) {
-          this.index = 0
-          return false
-        }
-        if (newS2 > -this.minNum || newS2 < -this.width) {
-          return false
-        }
-        var r = (-(newS2 + this.list[this.index]['transformMove']) * this.list[this.index]['interval'] / 10) + this.list[this.index]['move']
-        this.defaultValue = r
+          if (!(this.list[this.index]['transformMove'] < -newS2 && -newS2 <= this.list[this.index]['transformLine'])) {
+            if (this.list[this.index]['transformLine'] <= -newS2) {
+              this.index += 1
+            } else {
+              this.index -= 1
+            }
+          }
+          //最左最右可滑动
+          if (this.index > this.list.length - 1) {
+            this.index = this.list.length - 1
+            return false
+          } else if (this.index < 0) {
+            this.index = 0
+            return false
+          }
+          var r = (-(newS2 + this.list[this.index]['transformMove']) * this.list[this.index]['interval'] / 10) + this.list[this.index]['move']
+          this.defaultValue = r
+        }, 500)
       },
       //最后停下位置取整
       lastPosition (newS = this.translateLeft) {
@@ -296,19 +292,16 @@
           if (V < 0 || S < 0) {
             clearInterval(this.inertiaObject)
             //取整
-            this.lastPosition()
             this.moveBool = false
-            //计算数值
-            this.havaNum()
+            this.lastPosition()
             return false
           }
           if (this.currentLocation(nums + S * dir)) {
             this.translateLeft = nums + S * dir
           } else {
             clearInterval(this.inertiaObject)
-            this.lastPosition()
             this.moveBool = false
-            this.havaNum()
+            this.lastPosition()
           }
         }
         this.inertiaObject && clearInterval(this.inertiaObject)
