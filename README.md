@@ -3,7 +3,7 @@ caliper component. Easy to use.
 
 ## Install
 ```
-npm run dev
+npm run test
 ```
 ## Examples
 [http://localhost:9999](https://haomingi.github.io/vue-caliper/dists/index.html)
