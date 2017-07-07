@@ -1,6 +1,6 @@
 <template>
   <div class="caliper">
-    <canvas id="canv" @touchstart.stop.prevent="canvasStart" @touchmove.stop.prevent="canvasMove" @touchend.stop.prevent="canvasEnd" @transitionend.stop.prevent="transitionEnd" ref="canv" :width="widths" height="70" :style="{transitionDuration: transitions + 'ms', transform: 'translate3d(' + translateLeft + 'px, 0px, 0px)'}"></canvas>
+    <canvas @touchstart.stop.prevent="canvasStart" @touchmove.stop.prevent="canvasMove" @touchend.stop.prevent="canvasEnd" @transitionend.stop.prevent="transitionEnd" ref="canv" :width="widths" height="70" :style="{transitionDuration: transitions + 'ms', transform: 'translate3d(' + translateLeft + 'px, 0px, 0px)'}"></canvas>
   </div>
 </template>
 <script>

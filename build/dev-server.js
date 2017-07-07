@@ -32,7 +32,7 @@ compiler.plugin('compilation', function (compilation) {
 app.use(devMiddleware)
 app.use(hotMiddleware)
 
-// 监听 8888端口，开启服务器
+// 监听 9999端口，开启服务器
 app.listen(9999, function (err) {
   if (err) {
     console.log(err)

@@ -511,7 +511,6 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       transform: 'translate3d(' + _vm.translateLeft + 'px, 0px, 0px)'
     }),
     attrs: {
-      "id": "canv",
       "width": _vm.widths,
       "height": "70"
     },
