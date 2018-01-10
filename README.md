@@ -3,7 +3,7 @@ caliper component. Easy to use.
 
 ## Install
 ```
-npm run test
+npm run dev
 ```
 ## Examples
 [http://localhost:9999](https://haomingi.github.io/vue-caliper/dists/index.html)
@@ -13,11 +13,10 @@ npm run test
 ```js
 import VueCaliper from 'vue-caliper'
 
+//src/index.js中注册该组件
+
 new Vue({
 el: '#example',
-components: {
-  caliper: VueCaliper
-},
 data: {
   day: 30,
   mes: 30,
@@ -42,14 +41,14 @@ methods: {
 });
 ```
 ```html
-<caliper
+<vue-caliper
       v-model="day"
       :list="listDay"
       :set-min-num="setMinDay"
       :interval-num="15"
       :widths="4200"
       @change="onChange"
-></caliper>
+></vue-caliper>
 ```
 
 ## Api
