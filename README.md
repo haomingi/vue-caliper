@@ -44,8 +44,8 @@ methods: {
 <vue-caliper
       v-model="day"
       :list="listDay"
-      :set-min-num="setMinDay"
-      :interval-num="15"
+      :min-value="setMinDay"
+      :interval="15"
       :widths="4200"
       @change="onChange"
 ></vue-caliper>
@@ -57,8 +57,8 @@ methods: {
 |----------------------|-----------|--------------|--------------------------------------------------------------------|
 | value                | `Number`  | `0`          | 默认展示数值    |
 | list                 | `Array`   | ``           | 展示的列表数据，不同区块每格子对应数值可不同    |
-| interval-num         | `Number`  | `10`         | 设置两长线之间有多少个小格子    |
-| set-min-num          | `Number`  | `0`          | 设置最小可选中数值    |
+| interval             | `Number`  | `10`         | 设置两长线之间有多少个小格子    |
+| min-value            | `Number`  | `0`          | 设置最小可选中数值    |
 | widths               | `Number`  | `3500`       | 宽度    |
 
 ### Events

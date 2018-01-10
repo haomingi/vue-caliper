@@ -123,11 +123,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       type: Array,
       required: true
     },
-    intervalNum: {
+    interval: {
       type: Number,
       default: 10
     },
-    setMinNum: {
+    minValue: {
       type: Number,
       default: 0
     },
@@ -171,7 +171,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       this.width = window.innerWidth / 2 - canvas.offsetLeft;
       //smallNum小格数量用于for循环，intervalNum为出现长刻度间隙, defaultNum为默认起始刻度（通过传入数值计算位置展示），minNum为最小展示的数字位置
       var smallNum = 0,
-          intervalNum = this.intervalNum,
+          intervalNum = this.interval,
           defaultNum = 0;
       this.list.forEach((item, index) => {
         //计算当前对象小格画多少个
@@ -180,7 +180,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         for (let h = 0; h <= smallNum; h++) {
           //对应数值等于最小数值时存储 最小值对应位置
           activeNum = item['interval'] * h;
-          if (!this.minNum && activeNum == this.setMinNum) {
+          if (!this.minNum && activeNum == this.minValue) {
             this.minNum = h * 10;
           }
           //计算默认展示参数的位置
