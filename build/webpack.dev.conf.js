@@ -11,7 +11,7 @@ config.plugins = [
   new webpack.HotModuleReplacementPlugin(),
   new HtmlWebpackPlugin({
     filename: './../dists/index.html',
-    template: path.resolve(__dirname, './../demo/index.html'),
+    template: path.resolve(__dirname, './../index.html'),
     inject: true
   }),
   new FriendlyErrorsPlugin()

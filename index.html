@@ -94,14 +94,14 @@
       <b class="ang"></b>
       <i class="line"></i>
       <div class="dotted"></div>
-      <caliper
-              v-model="day"
-              :list="listDay"
-              :set-min-num="setMinDay"
-              :interval-num="15"
-              :widths="4200"
-              @change="onChange"
-      ></caliper>
+      <vue-caliper
+        v-model="day"
+        :list="listDay"
+        :set-min-num="setMinDay"
+        :interval-num="15"
+        :widths="4200"
+        @change="onChange"
+      ></vue-caliper>
       <div class="dotted1"></div>
     </div>
   </div>
@@ -111,13 +111,12 @@
       <b class="ang"></b>
       <i class="line"></i>
       <div class="dotted"></div>
-        <caliper
-                v-model="amount"
-                :list="list"
-                :set-min-num="setMinNum"
-                @change="onChanges"
-        >
-        </caliper>
+        <vue-caliper
+          v-model="amount"
+          :list="list"
+          :set-min-num="setMinNum"
+          @change="onChanges"
+        ></vue-caliper>
       <div class="dotted1"></div>
     </div>
   </div>
@@ -154,9 +153,6 @@
   ]
   new Vue({
     el: '#example',
-    components: {
-      caliper: VueCaliper
-    },
     data: {
       amount: 15000,
       amounts: 15000,

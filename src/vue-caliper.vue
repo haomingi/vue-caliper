@@ -5,6 +5,7 @@
 </template>
 <script>
   export default{
+    name: 'vue-caliper',
     props: {
       value: {
         type: Number,

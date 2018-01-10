@@ -7,13 +7,14 @@ function resolve (dir) {
 }
 
 module.exports = {
-  entry: [path.join(__dirname, './../src/vue-caliper.vue')],
+  //entry: [path.join(__dirname, './../src/vue-caliper.vue')],
+  entry: [path.join(__dirname, './../src/index.js')],
   output: {
     path: path.join(__dirname, '../dists'),
     publicPath: './',
     library: 'VueCaliper',
     libraryTarget: 'umd',
-    filename: "[name].js"
+    filename: 'vue-caliper.js'
   },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
@@ -70,7 +71,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       filename: './../dists/index.html',
-      template: path.resolve(__dirname, './../demo/index.html'),
+      template: path.resolve(__dirname, './../index.html'),
       inject: true
     })
   ]
