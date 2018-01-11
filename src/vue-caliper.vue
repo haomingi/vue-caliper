@@ -256,6 +256,7 @@
             if (this.list[this.index]['transformLine'] <= -newS2) {
               this.index += 1
             } else {
+              if (!this.index) return
               this.index -= 1
             }
             //数据为不同区块时，一次划过两个区块，会造成数值计算异常。
