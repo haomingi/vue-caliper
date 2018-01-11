@@ -3,13 +3,12 @@
  */
 import vueCaliper from './vue-caliper.vue'
 
-const MyPlugin = {
-  install (vue, options) {
-    vue.component(vueCaliper.name, vueCaliper)
-  }
+/* istanbul ignore next */
+vueCaliper.install = function (Vue) {
+  Vue.component(vueCaliper.name, vueCaliper)
 }
 
 if (typeof window !== 'undefined' && window.Vue) {
-  window.Vue.use(MyPlugin)
+  window.Vue.use(vueCaliper)
 }
-export default MyPlugin
+export default vueCaliper

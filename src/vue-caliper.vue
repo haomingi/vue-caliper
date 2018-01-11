@@ -101,9 +101,12 @@
             if (h == smallNum) {
               this.width += (h * 10)
               //存储当前循环最后一次画线位置
+              // 2018-01-10,此处计算是按照屏幕尺寸计算的，
+              // 当使用的时候外面宽度不是100%时候计算会出问题！！
               item['transformLine'] = this.width - window.innerWidth / 2 - canvas.offsetLeft
             }
             //存储当前循环第一次画线位置
+            // 同上面
             if (!h) {
               item['transformMove'] = this.width - window.innerWidth / 2 - canvas.offsetLeft
             }

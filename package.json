@@ -2,7 +2,7 @@
   "name": "vue-caliper",
   "version": "0.2.3",
   "description": "vue caliper component.",
-  "main": "src/vue-caliper.vue",
+  "main": "src/index.js",
   "scripts": {
     "build": "webpack --progress --watch --config build/webpack.config.js",
     "dev": "node build/dev-server.js"
