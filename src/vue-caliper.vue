@@ -1,5 +1,5 @@
 <template>
-  <div class="caliper">
+  <div class="caliper" ref='caliper' style='overflow: hidden;'>
     <canvas @touchstart.stop.prevent="canvasStart" @touchmove.stop.prevent="canvasMove" @touchend.stop.prevent="canvasEnd" @transitionend.stop.prevent="transitionEnd" ref="canv" :width="widths" height="70" :style="{transitionDuration: transitions + 'ms', transform: 'translate3d(' + translateLeft + 'px, 0px, 0px)'}"></canvas>
   </div>
 </template>
@@ -103,12 +103,13 @@
               //存储当前循环最后一次画线位置
               // 2018-01-10,此处计算是按照屏幕尺寸计算的，
               // 当使用的时候外面宽度不是100%时候计算会出问题！！
-              item['transformLine'] = this.width - window.innerWidth / 2 - canvas.offsetLeft
+              // 添加-- + (window.innerWidth - this.$refs.caliper.offsetWidth)
+              item['transformLine'] = this.width - window.innerWidth / 2 - canvas.offsetLeft + (window.innerWidth - this.$refs.caliper.offsetWidth)
             }
             //存储当前循环第一次画线位置
             // 同上面
             if (!h) {
-              item['transformMove'] = this.width - window.innerWidth / 2 - canvas.offsetLeft
+              item['transformMove'] = this.width - window.innerWidth / 2 - canvas.offsetLeft + (window.innerWidth - this.$refs.caliper.offsetWidth)
             }
           }
         })

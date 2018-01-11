@@ -89,16 +89,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
  */
 
 
-const MyPlugin = {
-  install(vue, options) {
-    vue.component(__WEBPACK_IMPORTED_MODULE_0__vue_caliper_vue___default.a.name, __WEBPACK_IMPORTED_MODULE_0__vue_caliper_vue___default.a);
-  }
+/* istanbul ignore next */
+__WEBPACK_IMPORTED_MODULE_0__vue_caliper_vue___default.a.install = function (Vue) {
+  Vue.component(__WEBPACK_IMPORTED_MODULE_0__vue_caliper_vue___default.a.name, __WEBPACK_IMPORTED_MODULE_0__vue_caliper_vue___default.a);
 };
 
 if (typeof window !== 'undefined' && window.Vue) {
-  window.Vue.use(MyPlugin);
+  window.Vue.use(__WEBPACK_IMPORTED_MODULE_0__vue_caliper_vue___default.a);
 }
-/* harmony default export */ __webpack_exports__["default"] = (MyPlugin);
+/* harmony default export */ __webpack_exports__["default"] = (__WEBPACK_IMPORTED_MODULE_0__vue_caliper_vue___default.a);
 
 /***/ }),
 /* 1 */
@@ -211,11 +210,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
           if (h == smallNum) {
             this.width += h * 10;
             //存储当前循环最后一次画线位置
-            item['transformLine'] = this.width - window.innerWidth / 2 - canvas.offsetLeft;
+            // 2018-01-10,此处计算是按照屏幕尺寸计算的，
+            // 当使用的时候外面宽度不是100%时候计算会出问题！！
+            // 添加-- + (window.innerWidth - this.$refs.caliper.offsetWidth)
+            item['transformLine'] = this.width - window.innerWidth / 2 - canvas.offsetLeft + (window.innerWidth - this.$refs.caliper.offsetWidth);
           }
           //存储当前循环第一次画线位置
+          // 同上面
           if (!h) {
-            item['transformMove'] = this.width - window.innerWidth / 2 - canvas.offsetLeft;
+            item['transformMove'] = this.width - window.innerWidth / 2 - canvas.offsetLeft + (window.innerWidth - this.$refs.caliper.offsetWidth);
           }
         }
       });
@@ -528,7 +531,11 @@ module.exports = function normalizeComponent (
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
   return _c('div', {
-    staticClass: "caliper"
+    ref: "caliper",
+    staticClass: "caliper",
+    staticStyle: {
+      "overflow": "hidden"
+    }
   }, [_c('canvas', {
     ref: "canv",
     style: ({
